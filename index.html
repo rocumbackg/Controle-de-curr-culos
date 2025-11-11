@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Controle de Currículos</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         body {
             font-family: sans-serif;
@@ -12,13 +13,13 @@
             color: #f2f2f2;
         }
         .container {
-            max-width: 600px;
+            max-width: 800px;
             margin: auto;
             background: #4A5D23;
             padding: 20px;
             border-radius: 8px;
         }
-        h1 {
+        h1, h2, h3 {
             text-align: center;
         }
         form {
@@ -32,7 +33,7 @@
             border-radius: 4px;
             border: 1px solid #ccc;
         }
-        button {
+        button, select {
             padding: 10px 20px;
             border: none;
             background-color: #3A4F41;
@@ -40,23 +41,44 @@
             border-radius: 4px;
             cursor: pointer;
         }
-        #dashboard {
+        .dashboard-section {
             background: #3A4F41;
             padding: 15px;
             border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        #submission-history li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Controle de Envios</h1>
-        <form id="email-form">
-            <input type="email" id="email" placeholder="Digite o e-mail" required>
-            <button type="submit">Enviar</button>
-        </form>
-        <div id="dashboard">
-            <h2>Último dia de envio:</h2>
-            <p id="last-submission-day">Nenhum envio registrado.</p>
+        <div class="dashboard-section">
+            <form id="email-form">
+                <input type="email" id="email" placeholder="Digite o e-mail" required>
+                <button type="submit">Enviar</button>
+            </form>
+        </div>
+
+        <div class="dashboard-section" id="statistics">
+            <h2>Estatísticas</h2>
+            <p>Currículos enviados este mês: <span id="monthly-count">0</span></p>
+            <p>Aguardando resposta: <span id="awaiting-count">0</span></p>
+            <p>Retorno positivo: <span id="positive-count">0</span></p>
+            <p>Retorno negativo: <span id="negative-count">0</span></p>
+        </div>
+
+        <div class="dashboard-section" id="chart-container">
+            <h2>Evolução de Envios</h2>
+            <canvas id="submissions-chart"></canvas>
+        </div>
+
+        <div class="dashboard-section">
             <h3>Histórico de envios:</h3>
             <ul id="submission-history">
                 <!-- Histórico será preenchido pelo JavaScript -->
