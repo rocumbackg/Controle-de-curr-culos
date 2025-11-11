@@ -12,9 +12,20 @@
             background-color: #556B2F;
             color: #f2f2f2;
         }
-        .container {
-            max-width: 800px;
-            margin: auto;
+        .main-container {
+            display: flex;
+            gap: 20px;
+        }
+        .left-column {
+            width: 200px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .right-column {
+            flex-grow: 1;
+        }
+        .stat-card, .dashboard-section {
             background: #4A5D23;
             padding: 20px;
             border-radius: 8px;
@@ -22,10 +33,17 @@
         h1, h2, h3 {
             text-align: center;
         }
+        .stat-card h3 {
+            margin-top: 0;
+        }
+        .stat-card p {
+            font-size: 2em;
+            text-align: center;
+            margin: 0;
+        }
         form {
             display: flex;
             gap: 10px;
-            margin-bottom: 20px;
         }
         input[type="email"] {
             flex-grow: 1;
@@ -41,12 +59,6 @@
             border-radius: 4px;
             cursor: pointer;
         }
-        .dashboard-section {
-            background: #3A4F41;
-            padding: 15px;
-            border-radius: 4px;
-            margin-bottom: 20px;
-        }
         #submission-history li {
             display: flex;
             justify-content: space-between;
@@ -56,33 +68,41 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Controle de Envios</h1>
-        <div class="dashboard-section">
-            <form id="email-form">
-                <input type="email" id="email" placeholder="Digite o e-mail" required>
-                <button type="submit">Enviar</button>
-            </form>
+    <h1>Controle de Envios</h1>
+    <div class="main-container">
+        <div class="left-column">
+            <div class="stat-card">
+                <h3>Enviados no Mês</h3>
+                <p id="monthly-count">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Aguardando</h3>
+                <p id="awaiting-count">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Positivos</h3>
+                <p id="positive-count">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Negativos</h3>
+                <p id="negative-count">0</p>
+            </div>
         </div>
-
-        <div class="dashboard-section" id="statistics">
-            <h2>Estatísticas</h2>
-            <p>Currículos enviados este mês: <span id="monthly-count">0</span></p>
-            <p>Aguardando resposta: <span id="awaiting-count">0</span></p>
-            <p>Retorno positivo: <span id="positive-count">0</span></p>
-            <p>Retorno negativo: <span id="negative-count">0</span></p>
-        </div>
-
-        <div class="dashboard-section" id="chart-container">
-            <h2>Evolução de Envios</h2>
-            <canvas id="submissions-chart"></canvas>
-        </div>
-
-        <div class="dashboard-section">
-            <h3>Histórico de envios:</h3>
-            <ul id="submission-history">
-                <!-- Histórico será preenchido pelo JavaScript -->
-            </ul>
+        <div class="right-column">
+            <div class="dashboard-section">
+                <form id="email-form">
+                    <input type="email" id="email" placeholder="Digite o e-mail" required>
+                    <button type="submit">Enviar</button>
+                </form>
+            </div>
+            <div class="dashboard-section" id="chart-container">
+                <h2>Evolução de Envios</h2>
+                <canvas id="submissions-chart"></canvas>
+            </div>
+            <div class="dashboard-section">
+                <h3>Histórico de envios:</h3>
+                <ul id="submission-history"></ul>
+            </div>
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
