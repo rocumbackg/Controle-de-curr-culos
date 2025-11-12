@@ -8,6 +8,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const positiveCountEl = document.getElementById('positive-count');
     const negativeCountEl = document.getElementById('negative-count');
     const chartCanvas = document.getElementById('submissions-chart');
+    const calendarContainer = document.getElementById('calendar-container');
+    const modal = document.getElementById('submissions-modal');
+    const modalTitle = document.getElementById('modal-title');
+    const modalSubmissionList = document.getElementById('modal-submission-list');
+    const closeButton = document.querySelector('.close-button');
 
     // Supabase Credentials
     const SUPABASE_URL = 'https://nwwsqtpqyhluppfsabij.supabase.co';
@@ -18,6 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Local State
     let allSubmissions = [];
     let submissionsChart;
+    let calendar;
 
     // --- Main Logic ---
 
@@ -26,6 +32,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Event Listeners
     emailForm.addEventListener('submit', handleFormSubmit);
+    closeButton.addEventListener('click', () => modal.style.display = 'none');
+    window.addEventListener('click', (event) => {
+        if (event.target == modal) {
+            modal.style.display = 'none';
+        }
+    });
 
     // --- Data Functions ---
 
@@ -41,39 +53,34 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         allSubmissions = data;
         updateDashboard(allSubmissions);
+        initializeCalendar(allSubmissions);
     }
 
     async function handleFormSubmit(e) {
         e.preventDefault();
         const email = emailInput.value;
         if (email) {
-            // 1. Create a temporary object for the UI
+            const tempId = `temp-${Date.now()}`;
             const optimisticSubmission = {
-                id: Date.now(), // Temporary ID
+                id: tempId,
                 email: email,
                 status: 'Aguardando resposta',
                 created_at: new Date().toISOString()
             };
 
-            // 2. Update the local state and UI immediately
             allSubmissions.unshift(optimisticSubmission);
             updateDashboard(allSubmissions);
             emailInput.value = '';
 
-            // 3. Asynchronously save to the database
             const newSubmission = await saveSubmission(email);
 
-            // 4. If save was successful, replace the temp object with the real one
-            if (newSubmission) {
-                const index = allSubmissions.findIndex(s => s.id === optimisticSubmission.id);
-                if (index !== -1) {
-                    allSubmissions[index] = newSubmission;
-                    // Re-render history to get correct IDs for status updates
-                    renderSubmissionHistory(allSubmissions);
-                }
-            } else {
-                // If save failed, remove the optimistic update
-                allSubmissions.shift();
+            const index = allSubmissions.findIndex(s => s.id === tempId);
+            if (newSubmission && index !== -1) {
+                allSubmissions[index] = newSubmission;
+                renderSubmissionHistory(allSubmissions);
+                initializeCalendar(allSubmissions);
+            } else if (!newSubmission) {
+                allSubmissions.splice(index, 1);
                 updateDashboard(allSubmissions);
                 alert('Falha ao salvar o envio.');
             }
@@ -94,14 +101,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function updateSubmissionStatus(id, newStatus) {
-        // Optimistically update the local state
         const index = allSubmissions.findIndex(s => s.id === id);
         if (index !== -1) {
             allSubmissions[index].status = newStatus;
             updateDashboard(allSubmissions);
         }
 
-        // Then, send the update to the database
         const { error } = await supabaseClient
             .from('submissions')
             .update({ status: newStatus })
@@ -109,7 +114,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (error) {
             console.error('Error updating status:', error);
-            // Revert the change on error
             fetchAllData();
         }
     }
@@ -120,6 +124,57 @@ document.addEventListener('DOMContentLoaded', () => {
         updateStatistics(submissions);
         renderSubmissionHistory(submissions);
         renderSubmissionsChart(submissions);
+    }
+
+    function initializeCalendar(submissions) {
+        const datesWithSubmissions = submissions.map(s => new Date(s.created_at).toISOString().split('T')[0]);
+
+        if (calendar) {
+            // Correctly update the calendar's selected dates
+            calendar.settings.selected.dates = datesWithSubmissions;
+            calendar.update(true); // Pass true to re-render the calendar
+            return;
+        }
+
+        calendar = new VanillaCalendar(calendarContainer, {
+            settings: {
+                lang: 'pt-BR',
+                selection: { day: 'multiple-ranged' },
+                selected: { dates: datesWithSubmissions },
+            },
+            actions: {
+                clickDay(e, self) {
+                    const clickedDate = self.selectedDates[0];
+                    showSubmissionsForDate(clickedDate);
+                }
+            }
+        });
+        calendar.init();
+    }
+
+    function showSubmissionsForDate(dateString) {
+        const selectedDate = new Date(dateString);
+        const submissionsOnDate = allSubmissions.filter(s => {
+            const subDate = new Date(s.created_at);
+            return subDate.toDateString() === selectedDate.toDateString();
+        });
+
+        modalTitle.textContent = `Envios de ${selectedDate.toLocaleDateString('pt-BR')}`;
+        modalSubmissionList.innerHTML = '';
+
+        if (submissionsOnDate.length > 0) {
+            submissionsOnDate.forEach(s => {
+                const li = document.createElement('li');
+                li.textContent = `${s.email} - Status: ${s.status}`;
+                modalSubmissionList.appendChild(li);
+            });
+        } else {
+            const li = document.createElement('li');
+            li.textContent = 'Nenhum envio nesta data.';
+            modalSubmissionList.appendChild(li);
+        }
+
+        modal.style.display = 'block';
     }
 
     function updateStatistics(submissions) {
