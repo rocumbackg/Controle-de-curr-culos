@@ -127,33 +127,25 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function initializeCalendar(submissions) {
-        const datesWithSubmissions = submissions.map(s => new Date(s.created_at).toISOString().split('T')[0]);
+        const datesWithSubmissions = submissions.map(s => new Date(s.created_at));
 
         if (calendar) {
-            // Correctly update the calendar's selected dates
-            calendar.settings.selected.dates = datesWithSubmissions;
-            calendar.update(true); // Pass true to re-render the calendar
+            calendar.set('enable', datesWithSubmissions);
             return;
         }
 
-        calendar = new VanillaCalendar(calendarContainer, {
-            settings: {
-                lang: 'pt-BR',
-                selection: { day: 'multiple-ranged' },
-                selected: { dates: datesWithSubmissions },
-            },
-            actions: {
-                clickDay(e, self) {
-                    const clickedDate = self.selectedDates[0];
-                    showSubmissionsForDate(clickedDate);
+        calendar = flatpickr(calendarContainer, {
+            inline: true,
+            enable: datesWithSubmissions,
+            onChange: function(selectedDates, dateStr, instance) {
+                if (selectedDates.length > 0) {
+                    showSubmissionsForDate(selectedDates[0]);
                 }
             }
         });
-        calendar.init();
     }
 
-    function showSubmissionsForDate(dateString) {
-        const selectedDate = new Date(dateString);
+    function showSubmissionsForDate(selectedDate) {
         const submissionsOnDate = allSubmissions.filter(s => {
             const subDate = new Date(s.created_at);
             return subDate.toDateString() === selectedDate.toDateString();
