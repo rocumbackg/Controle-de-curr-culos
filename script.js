@@ -14,10 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalSubmissionList = document.getElementById('modal-submission-list');
     const closeButton = document.querySelector('.close-button');
 
-    // Supabase Credentials
-    const SUPABASE_URL = 'https://nwwsqtpqyhluppfsabij.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im53d3NxdHBxeWhsdXBwZnNhYmlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI4ODU3MzQsImV4cCI6MjA3ODQ2MTczNH0.F6Uz6YAU94j9cQvoApXpN9uGnwU-4n1NicJr-6-6ZnM';
-
+    // Supabase credentials are now loaded from config.js
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     // Local State
