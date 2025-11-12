@@ -1,5 +1,18 @@
 {
+  "name": "resume-tracker",
+  "version": "1.0.0",
+  "description": "",
+  "main": "script.js",
+  "scripts": {
+    "test": "playwright test verification/verify.spec.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "playwright": "^1.42.1"
+  },
   "dependencies": {
-    "@supabase/supabase-js": "^2.81.1"
+    "http-server": "^14.1.1"
   }
 }
